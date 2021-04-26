@@ -29,12 +29,21 @@ import java.util.concurrent.Semaphore;
 public class Crawler {
 
     private static final Logger logger = LoggerFactory.getLogger(Crawler.class);
+
+    // final result
     private static CopyOnWriteArrayList<String> coal = Lists.newCopyOnWriteArrayList();
+
+    // user query
     private static String query = "youland";
 
-    // 限流，任意时刻不能超过20请求
+    // should not have more than 20 HTTP request at any time
     private static Semaphore semaphore = new Semaphore(20);
 
+    /**
+     * get web content of the url
+     * @param url
+     * @return
+     */
     private static String getContentFormUrl(String url) {
         CloseableHttpClient httpClient = HttpClientBuilder.create().disableAutomaticRetries().build();
         CloseableHttpResponse response = null;
@@ -68,6 +77,12 @@ public class Crawler {
         return null;
     }
 
+    /**
+     * get valid and complete url
+     * @param queryUrl
+     * @param href
+     * @return
+     */
     private static String getCompleteUrl(String queryUrl, String href) {
         if (href.startsWith(queryUrl)) {
             return href;
@@ -78,6 +93,12 @@ public class Crawler {
         }
     }
 
+    /**
+     * get all hrefs within the web content
+     * @param queryUrl
+     * @param content
+     * @param urlInPage
+     */
     private static void getHrefOfContent(String queryUrl, String content, Queue<String> urlInPage) {
         if (StringUtils.isNotBlank(content)) {
             String[] contents = content.split("<a href=\"");
@@ -93,6 +114,11 @@ public class Crawler {
         }
     }
 
+    /**
+     * main method
+     * @param args
+     * @throws Exception
+     */
     public static void main(String[] args) throws Exception {
         InputStream path = Crawler.class.getResourceAsStream("/web_crawler_url_list.txt");
         List<String> lines = IOUtils.readLines(path, "utf-8");
